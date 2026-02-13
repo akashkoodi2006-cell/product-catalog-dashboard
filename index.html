@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fashion Product Catalog · Seller Dashboard</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --primary-color: #667eea;
+            --primary-dark: #5a67d8;
+            --success-color: #48bb78;
+            --warning-color: #ed8936;
+            --danger-color: #f56565;
+            --bg-light: #f7fafc;
+            --bg-white: #ffffff;
+            --text-dark: #2d3748;
+            --text-gray: #718096;
+            --border-color: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0,0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0,0, 0.1);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-white);
+            box-shadow: var(--shadow);
+            padding: 2rem 0;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 0 2rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 1rem 0;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 1rem 2rem;
+            color: var(--text-gray);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-size: 1rem;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            background: var(--primary-color);
+            color: white;
+            border-right: 4px solid var(--primary-dark);
+        }
+
+        .sidebar-link i {
+            margin-right: 1rem;
+            width: 20px;
+            font-style: normal;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-white);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.products { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+        .stat-icon.active { background: linear-gradient(135deg, #48bb78, #38a169); color: white; }
+        .stat-icon.pending { background: linear-gradient(135deg, #ed8936, #dd6b20); color: white; }
+        .stat-icon.low-stock { background: linear-gradient(135deg, #f56565, #e53e3e); color: white; }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        /* Search and Filters */
+        .search-filters {
+            background: var(--bg-white);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            padding: 0.75rem 1rem 0.75rem 3rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23718096'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'/%3E%3C/svg%3E") no-repeat left 1rem center;
+            background-size: 20px;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            background: var(--bg-light);
+            color: var(--text-gray);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn.active,
+        .filter-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Products Grid */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .product-card {
+            background: var(--bg-white);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .product-image {
+            height: 220px;
+            background: linear-gradient(135deg, #f7fafc, #edf2f7);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-new { background: var(--success-color); color: white; }
+        .badge-low { background: var(--warning-color); color: white; }
+        .badge-out { background: var(--danger-color); color: white; }
+
+        .product-body {
+            padding: 1.5rem;
+        }
+
+        .product-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .product-variants {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+            margin: 1rem 0;
+        }
+
+        .variant-chip {
+            padding: 0.25rem 0.5rem;
+            background: var(--bg-light);
+            border-radius: 12px;
+            font-size: 0.75rem;
+            color: var(--text-gray);
+        }
+
+        .product-price {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Content sections */
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        /* Categories, Variants, Media Library, Settings, Analytics styles */
+        .categories-grid, .variants-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .category-card, .variant-card {
+            background: var(--bg-white);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .media-item {
+            background: var(--bg-white);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .media-item img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+
+        .settings-form {
+            max-width: 600px;
+            background: var(--bg-white);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .analytics-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .analytics-card {
+            background: var(--bg-white);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-white);
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-gray);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .color-swatches {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .color-swatch {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .color-swatch.active {
+            border-color: var(--primary-color);
+            transform: scale(1.1);
+        }
+
+        .size-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .size-btn {
+            padding: 0.5rem;
+            border: 2px solid var(--border-color);
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .size-btn.active,
+        .size-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                position: fixed;
+                height: 100vh;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .search-filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                min-width: auto;
+            }
+
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .page-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+            }
+        }
+
+        .mobile-menu-toggle {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-toggle {
+                display: block;
+                background: none;
+                border: none;
+                font-size: 1.5rem;
+                cursor: pointer;
+                padding: 0.5rem;
+            }
+        }
+
+        .text-gray {
+            color: var(--text-gray);
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo" onclick="showSection('dashboard')">FashionHub</div>
+            </div>
+            <ul class="sidebar-menu">
+                <li><button class="sidebar-link active" onclick="showSection('dashboard'); toggleSidebarMobile()"><i>📊</i> Dashboard</button></li>
+                <li><button class="sidebar-link" onclick="showSection('products'); toggleSidebarMobile()"><i>📦</i> Products</button></li>
+                <li><button class="sidebar-link" onclick="showSection('categories'); toggleSidebarMobile()"><i>👗</i> Categories</button></li>
+                <li><button class="sidebar-link" onclick="showSection('variants'); toggleSidebarMobile()"><i>🎨</i> Variants</button></li>
+                <li><button class="sidebar-link" onclick="showSection('media'); toggleSidebarMobile()"><i>📸</i> Media Library</button></li>
+                <li><button class="sidebar-link" onclick="showSection('settings'); toggleSidebarMobile()"><i>⚙️</i> Settings</button></li>
+                <li><button class="sidebar-link" onclick="showSection('analytics'); toggleSidebarMobile()"><i>📈</i> Analytics</button></li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Page Header (dynamic title) -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title" id="pageTitle">Product Catalog</h1>
+                    <p class="text-gray" id="pageSubtitle">Manage your fashion product listings</p>
+                </div>
+                <button class="btn btn-primary" id="addButton" onclick="openAddProductModal()">
+                    ➕ Add New Product
+                </button>
+                <button class="mobile-menu-toggle" onclick="toggleSidebar()">☰</button>
+            </div>
+
+            <!-- DASHBOARD SECTION (default) -->
+            <div id="dashboardSection" class="content-section active">
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon products">👗</div>
+                        <div class="stat-value">247</div>
+                        <div>Total Products</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon active">✅</div>
+                        <div class="stat-value">189</div>
+                        <div>Active Listings</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon pending">⏳</div>
+                        <div class="stat-value">32</div>
+                        <div>Pending Review</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon low-stock">📦</div>
+                        <div class="stat-value">26</div>
+                        <div>Low Stock</div>
+                    </div>
+                </div>
+
+                <!-- Search & Filters -->
+                <div class="search-filters">
+                    <input type="text" class="search-box" placeholder="Search products by name, SKU, or style code...">
+                    <div class="filter-group">
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="dresses">Dresses</button>
+                        <button class="filter-btn" data-filter="tops">Tops</button>
+                        <button class="filter-btn" data-filter="bottoms">Bottoms</button>
+                        <button class="filter-btn" data-filter="active">Active</button>
+                        <button class="filter-btn" data-filter="draft">Draft</button>
+                    </div>
+                </div>
+
+                <!-- Products Grid -->
+                <div class="products-grid">
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=400&h=220&fit=crop" alt="Summer Dress">
+                            <div class="product-badge badge-new">NEW</div>
+                        </div>
+                        <div class="product-body">
+                            <h3 class="product-title">Floral Print Maxi Dress</h3>
+                            <div class="product-variants">
+                                <span class="variant-chip">S, M, L, XL</span>
+                                <span class="variant-chip">Red, Blue, Green</span>
+                                <span class="variant-chip">Cotton</span>
+                            </div>
+                            <div class="product-price">$89.99</div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary btn-sm">Edit</button>
+                                <button class="btn btn-success btn-sm">View</button>
+                                <button class="btn btn-danger btn-sm">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=220&fit=crop" alt="Denim Jacket">
+                            <div class="product-badge badge-low">LOW STOCK</div>
+                        </div>
+                        <div class="product-body">
+                            <h3 class="product-title">Classic Denim Jacket</h3>
+                            <div class="product-variants">
+                                <span class="variant-chip">XS, S, M</span>
+                                <span class="variant-chip">Blue, Black</span>
+                                <span class="variant-chip">Denim</span>
+                            </div>
+                            <div class="product-price">$129.99</div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary btn-sm">Edit</button>
+                                <button class="btn btn-success btn-sm">View</button>
+                                <button class="btn btn-danger btn-sm">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="https://images.unsplash.com/photo-1598033124232-b1861992df05?w=400&h=220&fit=crop" alt="Sneakers">
+                        </div>
+                        <div class="product-body">
+                            <h3 class="product-title">White Leather Sneakers</h3>
+                            <div class="product-variants">
+                                <span class="variant-chip">7, 8, 9, 10</span>
+                                <span class="variant-chip">White</span>
+                                <span class="variant-chip">Leather</span>
+                            </div>
+                            <div class="product-price">$199.99</div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary btn-sm">Edit</button>
+                                <button class="btn btn-success btn-sm">View</button>
+                                <button class="btn btn-danger btn-sm">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="https://images.unsplash.com/photo-1605348532760-6753d2c43329?w=400&h=220&fit=crop" alt="Silk Blouse">
+                            <div class="product-badge badge-new">NEW</div>
+                        </div>
+                        <div class="product-body">
+                            <h3 class="product-title">Silk Chiffon Blouse</h3>
+                            <div class="product-variants">
+                                <span class="variant-chip">S, M, L</span>
+                                <span class="variant-chip">Ivory, Pink</span>
+                                <span class="variant-chip">Silk</span>
+                            </div>
+                            <div class="product-price">$79.99</div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary btn-sm">Edit</button>
+                                <button class="btn btn-success btn-sm">View</button>
+                                <button class="btn btn-danger btn-sm">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PRODUCTS SECTION (same as dashboard products but focused) -->
+            <div id="productsSection" class="content-section">
+                <div class="search-filters">
+                    <input type="text" class="search-box" placeholder="Search products...">
+                    <div class="filter-group">
+                        <button class="filter-btn active">All Products</button>
+                        <button class="filter-btn">Active</button>
+                        <button class="filter-btn">Draft</button>
+                    </div>
+                </div>
+                <div class="products-grid">
+                    <!-- same product cards, could be more -->
+                    <div class="product-card">... product list (same as dashboard) ...</div>
+                </div>
+                <p style="text-align:center; margin-top:2rem; color:var(--text-gray)">Showing 24 of 247 products</p>
+            </div>
+
+            <!-- CATEGORIES SECTION -->
+            <div id="categoriesSection" class="content-section">
+                <div class="stats-grid" style="margin-bottom:1rem">
+                    <div class="stat-card"><div class="stat-icon products">👗</div><div class="stat-value">12</div><div>Categories</div></div>
+                    <div class="stat-card"><div class="stat-icon active">🏷️</div><div class="stat-value">86</div><div>Subcategories</div></div>
+                </div>
+                <div class="categories-grid">
+                    <div class="category-card"><h3>Dresses</h3><p>42 products</p><span class="badge-new" style="display:inline-block; padding:0.25rem 0.75rem;">Maxi, Mini, Midi</span></div>
+                    <div class="category-card"><h3>Tops</h3><p>38 products</p><span class="badge-new" style="background:var(--primary-color)">Shirts, Blouses, Tees</span></div>
+                    <div class="category-card"><h3>Bottoms</h3><p>29 products</p><span>Jeans, Trousers, Skirts</span></div>
+                    <div class="category-card"><h3>Outerwear</h3><p>18 products</p><span>Jackets, Coats, Hoodies</span></div>
+                    <div class="category-card"><h3>Footwear</h3><p>24 products</p><span>Sneakers, Boots, Heels</span></div>
+                    <div class="category-card"><h3>Accessories</h3><p>31 products</p><span>Bags, Belts, Hats</span></div>
+                </div>
+            </div>
+
+            <!-- VARIANTS SECTION -->
+            <div id="variantsSection" class="content-section">
+                <div class="variants-grid">
+                    <div class="variant-card"><h3>Color</h3><div class="color-swatches" style="justify-content:center"><div class="color-swatch" style="background:#ff6b6b"></div><div class="color-swatch" style="background:#4ecdc4"></div><div class="color-swatch" style="background:#45b7d1"></div></div><p>12 color options</p></div>
+                    <div class="variant-card"><h3>Size</h3><p>XS, S, M, L, XL, XXL</p><p>Used by 156 products</p></div>
+                    <div class="variant-card"><h3>Material</h3><p>Cotton, Silk, Denim, Leather, Polyester</p><p>8 material types</p></div>
+                    <div class="variant-card"><h3>Style</h3><p>Casual, Formal, Sport, Evening</p><p>4 style variants</p></div>
+                </div>
+            </div>
+
+            <!-- MEDIA LIBRARY -->
+            <div id="mediaSection" class="content-section">
+                <div class="media-grid">
+                    <div class="media-item"><img src="https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=200&h=150&fit=crop" alt=""><p>dress-1.jpg</p></div>
+                    <div class="media-item"><img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=200&h=150&fit=crop" alt=""><p>jacket-3.jpg</p></div>
+                    <div class="media-item"><img src="https://images.unsplash.com/photo-1598033124232-b1861992df05?w=200&h=150&fit=crop" alt=""><p>sneakers-w.jpg</p></div>
+                    <div class="media-item"><img src="https://images.unsplash.com/photo-1605348532760-6753d2c43329?w=200&h=150&fit=crop" alt=""><p>blouse-silk.jpg</p></div>
+                </div>
+                <button class="btn btn-primary" style="margin-top:1rem">📤 Upload New Images</button>
+            </div>
+
+            <!-- SETTINGS SECTION -->
+            <div id="settingsSection" class="content-section">
+                <div class="settings-form">
+                    <h3>Store Settings</h3>
+                    <div class="form-group"><label class="form-label">Store Name</label><input class="form-control" value="FashionHub"></div>
+                    <div class="form-group"><label class="form-label">Email</label><input class="form-control" value="seller@fashionhub.com"></div>
+                    <div class="form-group"><label class="form-label">Currency</label><select class="form-control"><option>USD ($)</option><option>EUR (€)</option></select></div>
+                    <button class="btn btn-primary">Save Changes</button>
+                </div>
+            </div>
+
+            <!-- ANALYTICS SECTION -->
+            <div id="analyticsSection" class="content-section">
+                <div class="analytics-cards">
+                    <div class="analytics-card"><h3>Revenue</h3><div class="stat-value">$24,567</div><p>↑ 12% vs last month</p></div>
+                    <div class="analytics-card"><h3>Orders</h3><div class="stat-value">345</div><p>↗️ 8% increase</p></div>
+                    <div class="analytics-card"><h3>Conversion</h3><div class="stat-value">3.2%</div><p>↓ 0.4%</p></div>
+                    <div class="analytics-card"><h3>Top Product</h3><p>Floral Maxi Dress</p><p>87 sold this week</p></div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Add Product Modal (unchanged) -->
+    <div class="modal" id="addProductModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Product</h2>
+                <button class="close-modal" onclick="closeAddProductModal()">×</button>
+            </div>
+            <form id="productForm">
+                <div class="form-group">
+                    <label class="form-label">Product Name</label>
+                    <input type="text" class="form-control" placeholder="e.g. Floral Maxi Dress" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-control" rows="3" placeholder="Product description..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <select class="form-control">
+                        <option>Dresses</option>
+                        <option>Tops</option>
+                        <option>Bottoms</option>
+                        <option>Outerwear</option>
+                        <option>Footwear</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Price</label>
+                    <input type="number" class="form-control" step="0.01" placeholder="89.99">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Colors</label>
+                    <div class="color-swatches">
+                        <div class="color-swatch active" style="background: #ff6b6b;" data-color="Red"></div>
+                        <div class="color-swatch" style="background: #4ecdc4;" data-color="Teal"></div>
+                        <div class="color-swatch" style="background: #45b7d1;" data-color="Blue"></div>
+                        <div class="color-swatch" style="background: #96ceb4;" data-color="Green"></div>
+                        <div class="color-swatch" style="background: #feca57;" data-color="Yellow"></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Sizes</label>
+                    <div class="size-grid">
+                        <button type="button" class="size-btn active">XS</button>
+                        <button type="button" class="size-btn">S</button>
+                        <button type="button" class="size-btn">M</button>
+                        <button type="button" class="size-btn">L</button>
+                        <button type="button" class="size-btn">XL</button>
+                        <button type="button" class="size-btn">XXL</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Product Images</label>
+                    <input type="file" class="form-control" multiple accept="image/*">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select class="form-control">
+                        <option>Draft</option>
+                        <option>Active</option>
+                        <option>Pending Review</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Create Product</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Sidebar toggle for mobile
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+        function toggleSidebarMobile() {
+            if (window.innerWidth <= 768) {
+                document.getElementById('sidebar').classList.remove('open');
+            }
+        }
+
+        // Modal functions
+        function openAddProductModal() {
+            document.getElementById('addProductModal').classList.add('active');
+        }
+        function closeAddProductModal() {
+            document.getElementById('addProductModal').classList.remove('active');
+        }
+
+        // Show relevant section based on sidebar click
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            // Show selected section
+            document.getElementById(sectionId + 'Section').classList.add('active');
+            
+            // Update active class on sidebar buttons
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            // Find the clicked button and make it active (event passed from onclick)
+            event.target.classList.add('active');
+
+            // Update page title and subtitle, and add button visibility
+            const pageTitle = document.getElementById('pageTitle');
+            const pageSubtitle = document.getElementById('pageSubtitle');
+            const addButton = document.getElementById('addButton');
+            
+            const titles = {
+                dashboard: { title: 'Product Catalog', subtitle: 'Manage your fashion product listings', showAdd: true },
+                products: { title: 'Products', subtitle: 'All your fashion items', showAdd: true },
+                categories: { title: 'Categories', subtitle: 'Organize your collection', showAdd: false },
+                variants: { title: 'Variants', subtitle: 'Colors, sizes, materials', showAdd: false },
+                media: { title: 'Media Library', subtitle: 'Manage product images', showAdd: true },
+                settings: { title: 'Settings', subtitle: 'Store preferences', showAdd: false },
+                analytics: { title: 'Analytics', subtitle: 'Performance insights', showAdd: false }
+            };
+            
+            pageTitle.textContent = titles[sectionId].title;
+            pageSubtitle.textContent = titles[sectionId].subtitle;
+            addButton.style.display = titles[sectionId].showAdd ? 'inline-flex' : 'none';
+        }
+
+        // Color swatches interaction
+        document.querySelectorAll('.color-swatch').forEach(swatch => {
+            swatch.addEventListener('click', function() {
+                document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Size buttons
+        document.querySelectorAll('.size-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Form submission
+        document.getElementById('productForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Product created successfully! (Demo)');
+            closeAddProductModal();
+            this.reset();
+        });
+
+        // Close modal on outside click
+        document.getElementById('addProductModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeAddProductModal();
+            }
+        });
+
+        // Ensure dashboard is shown on load, and add button visible
+        window.onload = function() {
+            showSection('dashboard');
+        };
+    </script>
+</body>
+</html
